@@ -21,7 +21,7 @@ export const getOne = async (req: Request, res: Response) => {
 export const update: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params
-    logger.info('ID nhận từ client:', id)
+    logger.info('ID nhận từ client:' + id.toString())
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       res.status(400).json({ message: 'Invalid user ID' })
