@@ -11,7 +11,11 @@
       "env": {
         "NODE_ENV": "development"
       },
-      "skipFiles": ["<node_internals>/**"],
+      "skipFiles": [
+        "<node_internals>/**",
+        "node_modules/**", // Bỏ qua thư viện ngoài,
+        "<node_internals>/**"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "openOnSessionStart"
     }

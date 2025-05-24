@@ -1,6 +1,6 @@
 // src/passport-config.ts
 import UserModel from '@models/schema/user.schema.js'
-import bcrypt from 'bcrypt'
+import authService from '@service/auth/auth.service.js'
 import passport from 'passport'
 import { ExtractJwt, Strategy as JwtStrategy, StrategyOptions } from 'passport-jwt'
 import { Strategy as LocalStrategy } from 'passport-local'
@@ -14,11 +14,9 @@ passport.use(
     },
     async (email, password, done) => {
       try {
-        const user = await UserModel.findOne({ email })
-        if (!user) return done(null, false, { message: 'Incorrect email.' })
+        console.log('✅ LocalStrategy running')
 
-        const match = await bcrypt.compare(password, user.password)
-        if (!match) return done(null, false, { message: 'Incorrect password.' })
+        const user = await authService.validateUser(email, password)
 
         return done(null, user)
       } catch (error) {

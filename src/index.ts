@@ -3,8 +3,8 @@ import { morganMiddleware } from '@configs/morgan.js'
 import { createResponse } from '@models/response/format.response.js'
 import authRouter from '@routers/auth.routers.js'
 import userRouter from '@routers/users.routers.js'
-import { errorHandler } from '@utils/errors/errorHandler.js'
 import '@service/auth/passport-config.js' // nếu alias đã config trong tsconfig + moduleAlias
+import { errorHandler } from '@utils/errors/errorHandler.js'
 
 import express from 'express'
 import passport from 'passport'
@@ -19,9 +19,9 @@ app.use(express.json())
 app.use(morganMiddleware)
 
 // Router
+app.use(passport.initialize())
 
 app.use('/auth', authRouter)
-app.use(passport.initialize())
 
 app.use('/users', userRouter)
 

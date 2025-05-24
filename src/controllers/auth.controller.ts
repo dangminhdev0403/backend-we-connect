@@ -32,9 +32,8 @@ const authController = {
         return res.json(
           createResponse({
             statusCode: 201,
-            message: 'User register successfully',
+            message: 'User login successfully',
             data: {
-              message: 'Login successful',
               data: {
                 access_token: token,
                 user: new UserResponseDto(user)
@@ -44,6 +43,17 @@ const authController = {
         )
       }
     )(req, res, next)
+  },
+
+  async getProfile(req: Request, res: Response) {
+    const profile = authService.getProfile(req as any, res)
+    return res.json(
+      createResponse({
+        statusCode: 200,
+        message: 'User profile retrieved successfully',
+        data: profile
+      })
+    )
   }
 }
 
