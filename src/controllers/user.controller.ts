@@ -1,5 +1,5 @@
 import logger from '@configs/logger.js'
-import * as userService from '@service/users.service.js'
+import userService from '@service/users.service.js'
 import { Request, RequestHandler, Response } from 'express'
 import mongoose from 'mongoose'
 
