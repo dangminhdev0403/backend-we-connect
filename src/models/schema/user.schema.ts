@@ -12,7 +12,8 @@ export interface IUser extends Document {
 // Tạo schema
 const UserSchema: Schema = new Schema({
   name: { type: String, required: true },
-  email: { type: String, required: true, unique: true }
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true }
 })
 
 UserSchema.pre('save', async function (next) {
