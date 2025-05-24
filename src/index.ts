@@ -1,5 +1,6 @@
 import { connectDB } from '@configs/mongoose.js'
 import { morganMiddleware } from '@configs/morgan.js'
+import { jwtAuthGuard } from '@middlewares/auth.middleware.js'
 import { createResponse } from '@models/response/format.response.js'
 import authRouter from '@routers/auth.routers.js'
 import userRouter from '@routers/users.routers.js'
@@ -20,8 +21,12 @@ app.use(morganMiddleware)
 
 // Router
 app.use(passport.initialize())
-
+// Public routes
 app.use('/auth', authRouter)
+
+// Private routes
+app.use(jwtAuthGuard)
+// Bảo vệ toàn bộ các route dưới đây
 
 app.use('/users', userRouter)
 

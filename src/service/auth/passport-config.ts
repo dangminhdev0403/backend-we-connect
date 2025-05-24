@@ -1,6 +1,7 @@
 // src/passport-config.ts
-import UserModel from '@models/schema/user.schema.js'
+import logger from '@configs/logger.js'
 import authService from '@service/auth/auth.service.js'
+import { AppError } from '@utils/errors/AppError.js'
 import passport from 'passport'
 import { ExtractJwt, Strategy as JwtStrategy, StrategyOptions } from 'passport-jwt'
 import { Strategy as LocalStrategy } from 'passport-local'
@@ -35,11 +36,13 @@ const opts: StrategyOptions = {
 passport.use(
   new JwtStrategy(opts, async (jwt_payload, done) => {
     try {
-      const user = await UserModel.findById(jwt_payload.id)
-      if (user) return done(null, user)
-      else return done(null, false)
+      console.log('✅ JWTStrategy running')
+
+      const user = await authService.validateUserByToken(jwt_payload)
+      return done(null, user)
     } catch (error) {
-      return done(error, false)
+      logger.error('❌ JWTStrategy error:', error)
+      return done(new AppError('Unauthorized', 401, true, 'Bad Creatails'), false, error)
     }
   })
 )

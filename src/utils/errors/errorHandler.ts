@@ -14,6 +14,29 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
     return
   }
 
+  // JWT Error: Token không hợp lệ hoặc hết hạn
+  if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
+    res.status(401).json(
+      createResponse({
+        statusCode: 401,
+        message: err.message,
+        errors: { message: 'Unauthorized access' }
+      })
+    )
+    return
+  }
+
+  if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
+    res.status(401).json(
+      createResponse({
+        statusCode: 401,
+        message: err.message,
+        errors: { message: 'Unauthorized access' }
+      })
+    )
+    return
+  }
+
   if (err.name === 'ValidationError') {
     const errors = Object.values(err.errors).map((e) => (e as { message: string }).message)
 

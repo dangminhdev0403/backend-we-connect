@@ -21,14 +21,27 @@ class AuthService {
     return responseUser
   }
 
+  async validateUserByToken(jwt_payload: { name: string; email: string }) {
+    const user = await UserModel.findOne({ email: jwt_payload.email })
+    if (!user) throw new AppError('Unauthorized', 401, false, 'Bad Creatails')
+
+    const responseUser = new UserResponseDto(user)
+    return responseUser
+  }
+
   async generateToken(user: IUser) {
     const payload = {
       name: user.name,
       email: user.email
     }
-    const token = jwt.sign(payload, process.env.JWT_SECRET ?? 'your_jwt_secret', {
-      expiresIn: '1h'
-    })
+    const secret = process.env.JWT_SECRET ?? 'your_jwt_secret'
+    const expiresIn: string = process.env.ACCESS_TOKEN_EXPIRES_IN ?? '1h'
+    const options: jwt.SignOptions = {
+      // @ts-expect-error: expiresIn type is compatible but not recognized by type definition
+      expiresIn
+    }
+    const token = jwt.sign(payload, secret, options)
+
     return token
   }
 
