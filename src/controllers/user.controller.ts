@@ -50,6 +50,6 @@ export const update: RequestHandler = async (req, res, next) => {
 }
 
 export const remove = async (req: Request, res: Response): Promise<void> => {
-  const user = await userService.deleteUser(req.params.id)
+  await userService.deleteUser(req.params.id)
   res.json({ message: 'Deleted successfully' })
 }

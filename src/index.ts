@@ -6,7 +6,8 @@ import authRouter from '@routers/auth.routers.js'
 import userRouter from '@routers/users.routers.js'
 import '@service/auth/passport-config.js' // nếu alias đã config trong tsconfig + moduleAlias
 import { errorHandler } from '@utils/errors/errorHandler.js'
-
+import cookieParser from 'cookie-parser'
+import cors from 'cors'
 import express from 'express'
 import passport from 'passport'
 
@@ -15,13 +16,29 @@ const ip = '127.0.0.1'
 
 const app = express()
 
+//Cors
+app.use(
+  cors({
+    origin: 'http://localhost:5173', // đổi theo FE của bạn
+    credentials: true // Cho phép gửi cookie từ FE
+  })
+)
+
 // Middleware global
+app.use(cookieParser())
+
 app.use(express.json())
+
 app.use(morganMiddleware)
 
 // Router
 app.use(passport.initialize())
+
 // Public routes
+// Home (tuỳ chọn nếu cần route gốc)
+app.get('/', (_, res) => {
+  res.json(createResponse({ statusCode: 200, message: 'Welcome to API' }))
+})
 app.use('/auth', authRouter)
 
 // Private routes
@@ -29,11 +46,6 @@ app.use(jwtAuthGuard)
 // Bảo vệ toàn bộ các route dưới đây
 
 app.use('/users', userRouter)
-
-// Home (tuỳ chọn nếu cần route gốc)
-app.get('/', (_, res) => {
-  res.json(createResponse({ statusCode: 200, message: 'Welcome to API' }))
-})
 
 // ❗ Middleware 404 – đặt sau tất cả route
 app.use((req, res, _next) => {
