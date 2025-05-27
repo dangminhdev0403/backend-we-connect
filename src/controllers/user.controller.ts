@@ -1,4 +1,5 @@
 import logger from '@configs/logger.js'
+import { createResponse } from '@models/response/format.response.js'
 import userService from '@service/users.service.js'
 import { Request, RequestHandler, Response } from 'express'
 import mongoose from 'mongoose'
@@ -52,4 +53,19 @@ export const update: RequestHandler = async (req, res, next) => {
 export const remove = async (req: Request, res: Response): Promise<void> => {
   await userService.deleteUser(req.params.id)
   res.json({ message: 'Deleted successfully' })
+}
+
+export const getProfile = async (req: Request, res: Response): Promise<void> => {
+  if (!req.user) {
+    res.status(401).json({ message: 'Unauthorized' })
+    return
+  }
+  res.json(
+    createResponse({
+      statusCode: 200,
+      message: 'User profile retrieved successfully',
+      data: req.user
+    })
+  )
+  return
 }

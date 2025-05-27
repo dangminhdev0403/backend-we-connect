@@ -22,7 +22,7 @@ const authController = {
     )
   },
 
-  login(req: Request, res: Response, next: NextFunction) {
+  async login(req: Request, res: Response, next: NextFunction) {
     passport.authenticate(
       'local',
       { session: false },
@@ -44,17 +44,14 @@ const authController = {
             statusCode: 201,
             message: 'User login successfully',
             data: {
-              data: {
-                access_token: accessToken,
-                user: new UserResponseDto(user)
-              }
+              access_token: accessToken,
+              user: new UserResponseDto(user)
             }
           })
         )
       }
     )(req, res, next)
   },
-
   async getRefreshToken(req: Request, res: Response) {
     const refreshToken = req.cookies.refreshToken
 
@@ -62,23 +59,53 @@ const authController = {
       throw new AppError('Refresh token required', 401)
     }
 
-    const tokenDecoded: string | JwtPayload = authService.verifyToken(refreshToken)
-    if (typeof tokenDecoded === 'object' && tokenDecoded.exp && Date.now() > tokenDecoded.exp * 1000) {
-      const user = await UserModel.findOne({ email: tokenDecoded.email })
-      if (!user) {
-        throw new AppError('User not found', 404)
-      }
-      const { refreshToken }: { refreshToken: string } = await authService.generateToken(user)
+    let tokenDecoded: JwtPayload
 
-      // Gửi refreshToken bằng HTTP-only cookie
-      res.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        sameSite: 'strict',
-        path: '/auth/refresh',
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 ngày
-      })
-      res.json({ accessToken: tokenDecoded })
+    try {
+      const decoded = authService.verifyToken(refreshToken)
+      if (typeof decoded !== 'object' || !decoded.sub) {
+        throw new AppError('Invalid refresh token', 401)
+      }
+      tokenDecoded = decoded
+    } catch (err) {
+      throw new AppError('Invalid or expired refresh token', 401)
     }
+
+    const user = await UserModel.findOne({ email: tokenDecoded.sub }) // sub là email
+
+    if (!user) {
+      throw new AppError('User not found', 404)
+    }
+
+    // Tạo accessToken + refreshToken mới
+    const { accessToken, refreshToken: newRefreshToken } = await authService.generateToken(user)
+
+    // Gửi refreshToken mới bằng HTTP-only cookie
+    res.cookie('refreshToken', newRefreshToken, {
+      httpOnly: true,
+      sameSite: 'strict',
+      path: '/auth/refresh',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 ngày
+    })
+
+    res.json(
+      createResponse({
+        statusCode: 200,
+        message: 'Refresh token successfully',
+        data: { access_token: accessToken }
+      })
+    )
+    return
+  },
+
+  async logOut(req: Request, res: Response) {
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      sameSite: 'strict',
+      path: '/auth/refresh'
+    })
+    res.json(createResponse({ statusCode: 200, message: 'Logout successfully' }))
+    return
   }
 }
 

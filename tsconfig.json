@@ -7,7 +7,7 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-
+    "typeRoots": ["./node_modules/@types", "./src/utils/type"],
     "skipLibCheck": true,
     "baseUrl": "./src",
     "paths": {
@@ -17,6 +17,6 @@
     "allowSyntheticDefaultImports": true, // Hữu ích cho default import express
     "sourceMap": true // Có thể giúp debug dễ hơn
   },
-  "files": ["src/type.d.ts"],
+  "files": ["src/utils/type/type.d.ts"],
   "include": ["src/**/*"]
 }

@@ -6,6 +6,7 @@ const userRouter = Router()
 // Các route cho CRUD User
 userRouter.post('/', userController.create)
 userRouter.get('/', userController.getAll)
+userRouter.get('/profile', userController.getProfile)
 userRouter.put('/:id', userController.update) // OK
 userRouter.delete('/:id', userController.remove)
 
