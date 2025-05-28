@@ -3,6 +3,7 @@ import { morganMiddleware } from '@configs/morgan.js'
 import { jwtAuthGuard } from '@middlewares/auth.middleware.js'
 import { createResponse } from '@models/response/format.response.js'
 import authRouter from '@routers/auth.routers.js'
+import postRouter from '@routers/post.routes.js'
 import userRouter from '@routers/users.routers.js'
 import '@service/auth/passport-config.js' // nếu alias đã config trong tsconfig + moduleAlias
 import { errorHandler } from '@utils/errors/errorHandler.js'
@@ -46,6 +47,7 @@ app.use(jwtAuthGuard)
 // Bảo vệ toàn bộ các route dưới đây
 
 app.use('/users', userRouter)
+app.use('/post', postRouter)
 
 // ❗ Middleware 404 – đặt sau tất cả route
 app.use((req, res, _next) => {

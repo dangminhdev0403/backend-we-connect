@@ -1,5 +1,6 @@
 // src/middlewares/auth.middleware.ts
 import { AppError } from '@utils/errors/AppError.js'
+import { UserPayload } from '@utils/type/index.js'
 import { NextFunction, Request, Response } from 'express'
 import passport from 'passport'
 
@@ -13,7 +14,7 @@ export const jwtAuthGuard = (req: Request, res: Response, next: NextFunction) =>
         next(new AppError('Unauthorized', 401, true, 'Unauthorized access'))
         return
       }
-      req.user = user
+      req.user = user as UserPayload
       next()
     }
   )(req, res, next)

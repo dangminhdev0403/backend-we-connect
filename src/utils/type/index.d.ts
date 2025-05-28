@@ -1,10 +1,13 @@
 // types/express/index.d.ts
-import { UserResponseDto } from '@models/dto/UserResponseDto.ts'
 
+export interface UserPayload {
+  id: string
+  email: string
+}
 declare global {
   namespace Express {
     interface Request {
-      user?: UserResponseDto
+      user?: UserPayload
     }
   }
 }

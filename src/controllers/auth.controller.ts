@@ -12,7 +12,11 @@ const authController = {
   registerHandler: async (req: Request, res: Response) => {
     const { name, email, password } = req.body
     const user = await userService.createUser({ name, email, password })
-    const userRes = new UserResponseDto(user)
+    const userRes = new UserResponseDto({
+      id: user._id!,
+      name: user.name,
+      email: user.email
+    })
     res.json(
       createResponse({
         statusCode: 201,
@@ -45,7 +49,11 @@ const authController = {
             message: 'User login successfully',
             data: {
               access_token: accessToken,
-              user: new UserResponseDto(user)
+              user: new UserResponseDto({
+                id: user._id,
+                name: user.name,
+                email: user.email
+              })
             }
           })
         )
