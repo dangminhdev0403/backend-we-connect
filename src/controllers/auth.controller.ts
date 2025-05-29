@@ -92,7 +92,7 @@ const authController = {
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
       sameSite: 'strict',
-      path: '/auth/refresh',
+      path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 ngày
     })
 
@@ -110,7 +110,7 @@ const authController = {
     res.clearCookie('refreshToken', {
       httpOnly: true,
       sameSite: 'strict',
-      path: '/auth/refresh'
+      path: '/'
     })
     res.json(createResponse({ statusCode: 200, message: 'Logout successfully' }))
     return

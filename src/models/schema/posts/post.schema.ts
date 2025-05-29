@@ -6,6 +6,8 @@ export interface IPost extends Document {
   userId: mongoose.Types.ObjectId
   content: string
   imageUrl: string
+  likeCount: { type: number; default: 0 }
+  commentCount: { type: number; default: 0 }
   createdAt: Date
   updatedAt: Date
 }
@@ -23,6 +25,14 @@ const postSchema = new Schema<IPost>(
     },
     imageUrl: {
       type: String
+    },
+    likeCount: {
+      type: Number,
+      default: 0
+    },
+    commentCount: {
+      type: Number,
+      default: 0
     }
   },
   {

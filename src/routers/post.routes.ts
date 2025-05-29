@@ -11,5 +11,13 @@ const postService = new PostService()
 const postController = new PostController(postService)
 
 postRouter.post('/', upload.single('image'), postController.createPost)
+postRouter.get('/', postController.getPosts)
+// postRouter.get('/:id', postController.getPostById)
+postRouter.post('/like', postController.likePost)
+postRouter.delete('/unlike', postController.unlikePost)
+
+postRouter.post('/comment', upload.single('image'), postController.addComment)
+// postRouter.get('/:id/comments', postController.getComments)
+// postRouter.get('/:id/likes', postController.getPostLikes)
 
 export default postRouter
