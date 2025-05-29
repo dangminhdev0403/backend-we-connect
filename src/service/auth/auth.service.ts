@@ -12,7 +12,7 @@ class AuthService {
 
     const isMatch = await bcrypt.compare(password, user.password)
     if (!isMatch) throw new AppError('Unauthorized', 401, false, 'Bad Creatails')
-    const responseUser = new UserResponseDto(user)
+    const responseUser = new UserResponseDto({ id: user._id, name: user.name, email: user.email })
     return responseUser
   }
 
@@ -20,7 +20,7 @@ class AuthService {
     const user = await UserModel.findOne({ email: jwt_payload.sub })
     if (!user) throw new AppError('Unauthorized', 401, false, 'Bad Creatails')
 
-    const responseUser = new UserResponseDto(user)
+    const responseUser = new UserResponseDto({ id: user._id, name: user.name, email: user.email })
     return responseUser
   }
 

@@ -47,7 +47,7 @@ app.use(jwtAuthGuard)
 // Bảo vệ toàn bộ các route dưới đây
 
 app.use('/users', userRouter)
-app.use('/post', postRouter)
+app.use('/posts', postRouter)
 
 // ❗ Middleware 404 – đặt sau tất cả route
 app.use((req, res, _next) => {
