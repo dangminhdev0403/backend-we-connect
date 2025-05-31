@@ -4,7 +4,6 @@ import mongoose, { Document, Schema } from 'mongoose'
 // Định nghĩa interface cho document User (bổ sung kiểu cho TS)
 export interface IUser extends Document {
   _id: mongoose.Types.ObjectId // đảm bảo có _id
-
   name: string
   email: string
   password: string

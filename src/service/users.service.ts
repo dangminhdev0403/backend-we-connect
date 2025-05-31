@@ -1,6 +1,9 @@
 import logger from '@configs/logger.js'
-import UserModel, { IUser } from '@models/schema/user.schema.js'
+import UserModel, { IUser } from '@models/schema/users/user.schema.js'
 import { AppError } from '@utils/errors/AppError.js'
+import { listDocuments } from '@utils/listDocuments.js'
+import mongoose from 'mongoose'
+const ObjectId = mongoose.Types.ObjectId
 
 const userService = {
   async getAllUsers(): Promise<IUser[]> {
@@ -46,6 +49,105 @@ const userService = {
 
   async deleteUser(id: string): Promise<IUser | null> {
     return await UserModel.findByIdAndDelete(id)
+  },
+  async searchUsers(keyword: string, currentUserId: string, offset: number = 1, limit: number = 10) {
+    if (!keyword || typeof keyword !== 'string') {
+      logger.error('Invalid search keyword')
+      throw new AppError('Not found search ', 404, true, {
+        keyword: `Not found users`
+      })
+    }
+
+    return await listDocuments<IUser>(UserModel, {
+      page: offset,
+      limit,
+      search: keyword,
+      searchFields: ['name', 'email'],
+      projection: '-password',
+      lean: true
+    })
+  },
+  async searchUsersWithFriendStatus(keyword: string, currentUserId: string, page: number = 1, limit: number = 10) {
+    const skip = (page - 1) * limit
+
+    const result = await UserModel.aggregate([
+      {
+        $match: {
+          _id: { $ne: new ObjectId(currentUserId) },
+          $or: [{ name: { $regex: keyword, $options: 'i' } }, { email: { $regex: keyword, $options: 'i' } }]
+        }
+      },
+      {
+        $lookup: {
+          from: 'friendrequests',
+          let: { userId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $or: [
+                    {
+                      $and: [{ $eq: ['$senderId', new ObjectId(currentUserId)] }, { $eq: ['$receiverId', '$$userId'] }]
+                    },
+                    {
+                      $and: [{ $eq: ['$receiverId', new ObjectId(currentUserId)] }, { $eq: ['$senderId', '$$userId'] }]
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          as: 'friendRequest'
+        }
+      },
+      {
+        $addFields: {
+          requestStatus: {
+            $cond: [
+              { $gt: [{ $size: '$friendRequest' }, 0] },
+              {
+                $let: {
+                  vars: { req: { $arrayElemAt: ['$friendRequest', 0] } },
+                  in: {
+                    $cond: [
+                      { $eq: ['$$req.status', 'accepted'] },
+                      'accepted',
+                      {
+                        $cond: [{ $eq: ['$$req.senderId', new ObjectId(currentUserId)] }, 'pending', 'incoming']
+                      }
+                    ]
+                  }
+                }
+              },
+              'none'
+            ]
+          }
+        }
+      },
+      {
+        $project: { password: 0, friendRequest: 0 }
+      },
+      {
+        $facet: {
+          data: [{ $skip: skip }, { $limit: limit }],
+          totalCount: [{ $count: 'count' }]
+        }
+      }
+    ])
+
+    const users = result[0]?.data ?? []
+    const totalItems = result[0]?.totalCount[0]?.count ?? 0
+    const totalPages = Math.ceil(totalItems / limit)
+
+    return {
+      data: users,
+      meta: {
+        totalItems,
+        totalPages,
+        currentPage: page,
+        pageSize: limit
+      }
+    }
   }
 }
 

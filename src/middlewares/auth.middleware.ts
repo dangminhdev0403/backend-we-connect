@@ -1,6 +1,6 @@
 // src/middlewares/auth.middleware.ts
 import { AppError } from '@utils/errors/AppError.js'
-import { UserPayload } from '@utils/type/index.js'
+import { UserPayload } from '@utils/type/type.js'
 import { NextFunction, Request, Response } from 'express'
 import passport from 'passport'
 

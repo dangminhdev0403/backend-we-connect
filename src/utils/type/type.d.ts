@@ -12,5 +12,16 @@ declare global {
     }
   }
 }
+import 'socket.io'
+
+declare module 'socket.io' {
+  interface Socket {
+    data?: {
+      _id: string
+      email: string
+      name?: string
+    }
+  }
+}
 
 export {}

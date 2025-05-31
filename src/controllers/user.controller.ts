@@ -69,3 +69,12 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
   )
   return
 }
+
+export const searchUser = async (req: Request, res: Response): Promise<void> => {
+  const currentUserId: string = req.user?.id as string
+  const offset = Math.max(1, parseInt(req.query.offset as string)) || 1
+  const limit = Math.max(1, parseInt(req.query.limit as string)) || 6
+  const users = await userService.searchUsersWithFriendStatus(req.query.keyword as string, currentUserId, offset, limit)
+  res.json(users)
+  return
+}

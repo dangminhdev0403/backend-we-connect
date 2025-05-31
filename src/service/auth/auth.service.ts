@@ -1,9 +1,10 @@
 import { UserResponseDto } from '@models/dto/UserResponseDto.js'
-import UserModel, { IUser } from '@models/schema/user.schema.js'
+import UserModel from '@models/schema/users/user.schema.js'
 import bcrypt from 'bcrypt'
 import jwt, { JwtPayload } from 'jsonwebtoken'
 
 import { AppError } from '@utils/errors/AppError.js'
+import { DecodedToken } from '@utils/type/interface.js'
 
 class AuthService {
   async validateUser(email: string, password: string) {
@@ -16,7 +17,7 @@ class AuthService {
     return responseUser
   }
 
-  async validateUserByToken(jwt_payload: { name: string; sub: string }) {
+  async validateUserByToken(jwt_payload: DecodedToken) {
     const user = await UserModel.findOne({ email: jwt_payload.sub })
     if (!user) throw new AppError('Unauthorized', 401, false, 'Bad Creatails')
 
@@ -24,12 +25,14 @@ class AuthService {
     return responseUser
   }
 
-  async generateToken(user: IUser) {
-    const payload = {
+  async generateToken(user: UserResponseDto) {
+    const payload: DecodedToken = {
+      id: user.id, // ✅ chuyển từ ObjectId => string
       name: user.name,
       sub: user.email
     }
-    const secret = process.env.JWT_SECRET ?? 'your_jwt_secret'
+    const secret = process.env.JWT_SECRET ?? ('your_jwt_secret' as string)
+
     const expiresIn: string = process.env.ACCESS_TOKEN_EXPIRES_IN ?? '1h'
     const refreshTokenExpiresIn: string = process.env.REFRESH_TOKEN_EXPIRES_IN ?? '7d'
     const secretRefresh = process.env.REFRESH_TOKEN_SECRET ?? 'your_refresh_token_secret'

@@ -7,6 +7,7 @@ const userRouter = Router()
 userRouter.post('/', userController.create)
 userRouter.get('/', userController.getAll)
 userRouter.get('/profile', userController.getProfile)
+userRouter.get('/search', userController.searchUser)
 userRouter.put('/:id', userController.update) // OK
 userRouter.delete('/:id', userController.remove)
 

@@ -1,11 +1,12 @@
 import { UserResponseDto } from '@models/dto/UserResponseDto.js'
 import { createResponse } from '@models/response/format.response.js'
-import UserModel, { IUser } from '@models/schema/user.schema.js'
+import UserModel from '@models/schema/users/user.schema.js'
 import authService from '@service/auth/auth.service.js'
 import userService from '@service/users.service.js'
 import { AppError } from '@utils/errors/AppError.js'
 import { NextFunction, Request, Response } from 'express'
 import { JwtPayload } from 'jsonwebtoken'
+import { Types } from 'mongoose'
 import passport from 'passport'
 
 const authController = {
@@ -30,7 +31,7 @@ const authController = {
     passport.authenticate(
       'local',
       { session: false },
-      async (err: Error | null, user: IUser | false, info: { message: string } | undefined) => {
+      async (err: Error | null, user: UserResponseDto | false, info: { message: string } | undefined) => {
         if (err) return next(err)
         if (!user) return res.status(401).json({ message: info?.message ?? 'Unauthorized' })
 
@@ -50,7 +51,7 @@ const authController = {
             data: {
               access_token: accessToken,
               user: new UserResponseDto({
-                id: user._id,
+                id: user.id as unknown as Types.ObjectId,
                 name: user.name,
                 email: user.email
               })
@@ -80,13 +81,14 @@ const authController = {
     }
 
     const user = await UserModel.findOne({ email: tokenDecoded.sub }) // sub là email
-
+    if (!user) throw new AppError('User not found', 404)
+    const useDTO = new UserResponseDto({ id: user._id, name: user.name, email: user.email })
     if (!user) {
       throw new AppError('User not found', 404)
     }
 
     // Tạo accessToken + refreshToken mới
-    const { accessToken, refreshToken: newRefreshToken } = await authService.generateToken(user)
+    const { accessToken, refreshToken: newRefreshToken } = await authService.generateToken(useDTO)
 
     // Gửi refreshToken mới bằng HTTP-only cookie
     res.cookie('refreshToken', newRefreshToken, {

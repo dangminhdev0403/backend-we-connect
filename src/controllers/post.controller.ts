@@ -7,15 +7,20 @@ import { Request, Response } from 'express'
 
 export class PostController {
   constructor(private readonly postService: PostService) {}
-
   public getPosts = async (req: Request, res: Response): Promise<void> => {
     try {
-      const page = parseInt(req.query.page as string) || 1
-      const limit = parseInt(req.query.limit as string) || 10
+      const offset = Math.max(1, parseInt(req.query.offset as string)) || 1
+      const limit = Math.max(1, parseInt(req.query.limit as string)) || 10
 
-      const posts = await this.postService.getPosts(page, limit)
+      const { posts, meta } = await this.postService.getPosts(offset, limit)
 
-      res.status(200).json(createResponse({ statusCode: 200, message: 'Posts fetched successfully', data: posts }))
+      res.status(200).json(
+        createResponse({
+          statusCode: 200,
+          message: 'Posts fetched successfully',
+          data: { posts, meta }
+        })
+      )
     } catch (error) {
       logger.error('Error fetching posts', error)
       res.status(500).json({ message: 'Server error', error })

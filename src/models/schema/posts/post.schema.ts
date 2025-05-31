@@ -39,5 +39,22 @@ const postSchema = new Schema<IPost>(
     timestamps: true // thêm createdAt và updatedAt tự động
   }
 )
+postSchema.virtual('author').get(function () {
+  return this.userId
+})
+postSchema.set('toJSON', {
+  virtuals: true,
+  versionKey: false,
+  transform: (_, ret) => {
+    ret.id = ret._id
+    delete ret._id
+    delete ret.userId // ẩn userId gốc
+    return ret
+  }
+})
+
+postSchema.set('toObject', {
+  virtuals: true
+})
 const PostModel = mongoose.model<IPost>('Post', postSchema)
 export default PostModel

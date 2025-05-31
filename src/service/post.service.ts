@@ -26,12 +26,31 @@ export class PostService {
 
     return newPost
   }
-  async getPosts(page: number = 1, limit: number = 10) {
-    return PostModel.find()
-      .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .lean()
+  public async getPosts(offset: number = 1, limit: number = 10) {
+    const skip = (offset - 1) * limit
+
+    const [posts, totalItems] = await Promise.all([
+      PostModel.find().sort({ createdAt: -1 }).skip(skip).limit(limit).populate('userId', 'name avatar').lean(),
+      PostModel.countDocuments()
+    ])
+
+    const postsWithAuthor = posts.map((post) => {
+      const { userId, ...rest } = post
+      return {  
+        ...rest,
+        author: userId
+      }
+    })
+
+    return {
+      posts: postsWithAuthor,
+      meta: {
+        totalItems,
+        totalPages: Math.ceil(totalItems / limit),
+        currentPage: offset,
+        pageSize: limit
+      }
+    }
   }
 
   public async likePost(postId: string, userId: string) {
@@ -75,6 +94,6 @@ export class PostService {
   }
 
   async getPostLikes(postId: string) {
-    return LikeModel.find({ postId }).populate('userId', 'name avatar')
+    return LikeModel.find({ postId }).populate('userId', 'name ')
   }
 }
