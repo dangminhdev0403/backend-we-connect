@@ -13,6 +13,7 @@ import postRouter from '@routers/post.routes.js'
 import userRouter from '@routers/users.routers.js'
 
 // 🟢 Quan trọng: đảm bảo cấu hình chiến lược Passport trước khi dùng
+import chatRouter from '@routers/chat.routes.js'
 import '@service/auth/passport-config.js'
 
 const app = express()
@@ -43,7 +44,7 @@ app.use(jwtAuthGuard)
 app.use('/users', userRouter)
 app.use('/friends', friendRequestRouter)
 app.use('/posts', postRouter)
-
+app.use('/chat', chatRouter)
 // 404
 app.use((req, res) => {
   res.status(404).json(
