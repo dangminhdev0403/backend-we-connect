@@ -5,6 +5,7 @@ export interface IFriendRequest extends Document {
   receiverId: mongoose.Types.ObjectId // người nhận lời mời
   status: 'pending' | 'accepted' | 'rejected'
   createdAt: Date
+  updatedAt: Date
 }
 
 const FriendRequestSchema = new Schema<IFriendRequest>(
@@ -15,6 +16,7 @@ const FriendRequestSchema = new Schema<IFriendRequest>(
   },
   { timestamps: true }
 )
+FriendRequestSchema.index({ senderId: 1, receiverId: 1 }, { unique: true })
 
 const FriendRequestModel = mongoose.model<IFriendRequest>('FriendRequest', FriendRequestSchema)
 export default FriendRequestModel

@@ -62,20 +62,51 @@ export const registerSocketHandlers = (io: Server) => {
       logger.info(`📨 Sending friend request from ${userId} to ${receiverId}`)
 
       const receiverSocket = users.get(receiverId)
-      const authUser = socket.data
+      const senderSocket = users.get(userId)
 
-      logger.info(`🔍 Authenticated user: ${JSON.stringify(authUser, null, 2)}`)
+      const payload = {
+        from: userId,
+        to: receiverId,
+        message: 'Friend request sent',
+        sentAt: new Date().toISOString()
+      }
 
+      // Gửi cho người nhận (receiver)
+      if (receiverSocket) {
+        receiverSocket.emit(EVENTS.FRIEND_REQUEST_RECEIVED, payload)
+        logger.info(`📤 Emitted FRIEND_REQUEST_RECEIVED to ${receiverSocket.id}`)
+      }
+
+      // Gửi lại cho người gửi (sender) để frontend tự refetch
+      if (senderSocket) {
+        senderSocket.emit(EVENTS.SEND_FRIEND_REQUEST, payload)
+        logger.info(`📤 Emitted SEND_FRIEND_REQUEST to ${senderSocket.id}`)
+      }
+    })
+    socket.on(EVENTS.FRIEND_REQUEST_APPROVED, ({ receiverId }) => {
+      logger.info(`📨 Friend request approved from ${userId} to ${receiverId}`)
+      const receiverSocket = users.get(receiverId)
       if (receiverSocket) {
         logger.info(`✅ Found receiver socket: ${receiverSocket.id}`)
-        receiverSocket.emit(EVENTS.FRIEND_REQUEST_RECEIVED, {
+        receiverSocket.emit(EVENTS.FRIEND_REQUEST_APPROVED, {
           from: userId,
-          message: 'Friend request received',
-          sentAt: new Date().toISOString()
+          message: 'Friend request approved',
+          action: 'accept'
         })
-        logger.info(`📤 Emitted ${EVENTS.FRIEND_REQUEST_RECEIVED} to ${receiverSocket.id}`)
-      } else {
-        logger.warn(`⚠️ Receiver ${friendId} not connected`)
+        logger.info(`📤 Emitted ${EVENTS.FRIEND_REQUEST_APPROVED} to ${receiverSocket.id}`)
+      }
+    })
+    socket.on(EVENTS.FRIEND_REQUEST_DECLINED, ({ receiverId }) => {
+      logger.info(`📨 Friend request declined from ${userId} to ${receiverId}`)
+      const receiverSocket = users.get(receiverId)
+      if (receiverSocket) {
+        logger.info(`✅ Found receiver socket: ${receiverSocket.id}`)
+        receiverSocket.emit(EVENTS.FRIEND_REQUEST_DECLINED, {
+          from: userId,
+          message: 'Friend request declined',
+          action: 'reject'
+        })
+        logger.info(`📤 Emitted ${EVENTS.FRIEND_REQUEST_DECLINED} to ${receiverSocket.id}`)
       }
     })
   })

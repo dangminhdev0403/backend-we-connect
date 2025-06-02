@@ -69,28 +69,29 @@ const userService = {
   },
   async searchUsersWithFriendStatus(keyword: string, currentUserId: string, page: number = 1, limit: number = 10) {
     const skip = (page - 1) * limit
+    const currentObjectId = new ObjectId(currentUserId)
 
     const result = await UserModel.aggregate([
       {
         $match: {
-          _id: { $ne: new ObjectId(currentUserId) },
+          _id: { $ne: currentObjectId },
           $or: [{ name: { $regex: keyword, $options: 'i' } }, { email: { $regex: keyword, $options: 'i' } }]
         }
       },
       {
         $lookup: {
           from: 'friendrequests',
-          let: { userId: '$_id' },
+          let: { userId: '$_id', currentUserId: currentObjectId },
           pipeline: [
             {
               $match: {
                 $expr: {
                   $or: [
                     {
-                      $and: [{ $eq: ['$senderId', new ObjectId(currentUserId)] }, { $eq: ['$receiverId', '$$userId'] }]
+                      $and: [{ $eq: ['$senderId', '$$currentUserId'] }, { $eq: ['$receiverId', '$$userId'] }]
                     },
                     {
-                      $and: [{ $eq: ['$receiverId', new ObjectId(currentUserId)] }, { $eq: ['$senderId', '$$userId'] }]
+                      $and: [{ $eq: ['$receiverId', '$$currentUserId'] }, { $eq: ['$senderId', '$$userId'] }]
                     }
                   ]
                 }
@@ -109,18 +110,25 @@ const userService = {
                 $let: {
                   vars: { req: { $arrayElemAt: ['$friendRequest', 0] } },
                   in: {
-                    $cond: [
-                      { $eq: ['$$req.status', 'accepted'] },
-                      'accepted',
-                      {
-                        $cond: [{ $eq: ['$$req.senderId', new ObjectId(currentUserId)] }, 'pending', 'incoming']
-                      }
-                    ]
+                    $switch: {
+                      branches: [
+                        { case: { $eq: ['$$req.status', 'accepted'] }, then: 'accepted' },
+                        { case: { $eq: ['$$req.status', 'rejected'] }, then: 'rejected' },
+                        {
+                          case: { $eq: ['$$req.senderId', currentObjectId] },
+                          then: 'pending'
+                        }
+                      ],
+                      default: 'incoming'
+                    }
                   }
                 }
               },
               'none'
             ]
+          },
+          requestId: {
+            $cond: [{ $gt: [{ $size: '$friendRequest' }, 0] }, { $arrayElemAt: ['$friendRequest._id', 0] }, null]
           }
         }
       },
