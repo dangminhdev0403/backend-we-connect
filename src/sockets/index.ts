@@ -1,4 +1,5 @@
 import logger from '@configs/logger.js'
+import { chatSocketHandler } from '@sockets/chatBox.socket.js'
 import { EVENTS } from '@sockets/events.js'
 import jwt from 'jsonwebtoken'
 import { Server, Socket } from 'socket.io'
@@ -109,5 +110,20 @@ export const registerSocketHandlers = (io: Server) => {
         logger.info(`📤 Emitted ${EVENTS.FRIEND_REQUEST_DECLINED} to ${receiverSocket.id}`)
       }
     })
+
+    socket.on(EVENTS.SEND_MESSAGE, ({ receiverId }) => {
+      logger.info(`📨 Friend send new message declined from ${userId} to ${receiverId}`)
+      const receiverSocket = users.get(receiverId)
+      if (receiverSocket) {
+        logger.info(`✅ Found receiver socket: ${receiverSocket.id}`)
+        receiverSocket.emit(EVENTS.MESSAGE_RECEIVED, {
+          from: userId,
+          message: 'Friend message received'
+        })
+        logger.info(`📤 Emitted ${EVENTS.MESSAGE_RECEIVED} to ${receiverSocket.id}`)
+      }
+    })
+
+    chatSocketHandler(io, socket)
   })
 }

@@ -28,6 +28,8 @@ app.use(
 
 app.use(cookieParser())
 app.use(express.json())
+app.use(express.urlencoded({ extended: true })) // Nếu dùng form-data
+
 app.use(morganMiddleware)
 
 // 🛡️ Passport
@@ -45,6 +47,7 @@ app.use('/users', userRouter)
 app.use('/friends', friendRequestRouter)
 app.use('/posts', postRouter)
 app.use('/chat', chatRouter)
+
 // 404
 app.use((req, res) => {
   res.status(404).json(

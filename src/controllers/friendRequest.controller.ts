@@ -51,10 +51,10 @@ export class FriendRequestController {
 
   public getFriendRequests = async (req: Request, res: Response): Promise<void> => {
     const userId: string = req.user?.id as string
-    const page: number = parseInt(req.query.page as string) || 1
+    const offset: number = parseInt(req.query.offset as string) || 1
     const limit: number = parseInt(req.query.limit as string) || 10
 
-    const friendRequests = await this.friendRequestService.getFriendRequests(userId, page, limit)
+    const friendRequests = await this.friendRequestService.getFriendRequests(userId, offset, limit)
 
     const rs = createResponse({
       statusCode: 200,
@@ -68,10 +68,10 @@ export class FriendRequestController {
   public getListFriend = async (req: Request, res: Response): Promise<void> => {
     const userId: string = req.user?.id as string
     logger.info(`Get list friend of ${userId}`)
-    const page: number = parseInt(req.query.page as string) || 1
+    const offset: number = parseInt(req.query.offset as string) || 1
     const limit: number = parseInt(req.query.limit as string) || 10
 
-    const friends = await this.friendRequestService.getFriendsPaginated(userId, page, limit)
+    const friends = await this.friendRequestService.getFriendsPaginated(userId, offset, limit)
 
     const rs = createResponse({
       statusCode: 200,

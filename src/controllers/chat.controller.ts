@@ -9,8 +9,8 @@ export class ChatController {
 
   public sendMessage = async (req: Request, res: Response): Promise<void> => {
     try {
+      const { receiverId, content } = req.body
       const senderId = req.user?.id as string
-      const receiverId = req.body.receiverId
       if (senderId == receiverId) {
         logger.error(`Sender ID and receiver ID are the same: ${senderId}`)
         throw new AppError(
@@ -20,7 +20,6 @@ export class ChatController {
           'Sender ID and receiver ID are the same'
         )
       }
-      const content = req.body.content
       const message = await this.chatService.sendMessage(senderId, receiverId, content)
       res.status(200).json(createResponse({ statusCode: 200, message: 'You send message successfully', data: message }))
     } catch (error: any) {
