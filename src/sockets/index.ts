@@ -1,5 +1,4 @@
 import logger from '@configs/logger.js'
-import { chatSocketHandler } from '@sockets/chatBox.socket.js'
 import { EVENTS } from '@sockets/events.js'
 import jwt from 'jsonwebtoken'
 import { Server, Socket } from 'socket.io'
@@ -124,6 +123,5 @@ export const registerSocketHandlers = (io: Server) => {
       }
     })
 
-    chatSocketHandler(io, socket)
   })
 }
